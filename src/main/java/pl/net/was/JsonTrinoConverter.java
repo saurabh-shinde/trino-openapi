@@ -17,6 +17,7 @@ package pl.net.was;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
@@ -124,7 +125,12 @@ public class JsonTrinoConverter
             return buildMap(jsonNode, mapType, schemaType);
         }
         if (type instanceof ArrayType arrayType) {
-            return buildArray((ArrayNode) jsonNode, arrayType, schemaType);
+            if (jsonNode.isArray()) {
+                return buildArray((ArrayNode) jsonNode, arrayType, schemaType);
+            }
+            ArrayNode arrayNode = new ArrayNode(JsonNodeFactory.instance);
+            arrayNode.add(jsonNode);
+            return buildArray(arrayNode, arrayType, schemaType);
         }
         if (type instanceof RowType rowType) {
             PageBuilder pageBuilder = new PageBuilder(ImmutableList.of(rowType));
